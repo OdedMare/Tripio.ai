@@ -25,6 +25,6 @@ class RestaurantAgent(BaseAgent[GeneratedRestaurants]):
         return Agent(
             name=self.name,
             instructions=SYSTEM_PROMPT,
-            model="gpt-4o",
+            model="gpt-5.5",
             output_type=GeneratedRestaurants,
         )

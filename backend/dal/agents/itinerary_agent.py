@@ -38,7 +38,7 @@ class ItineraryAgent(BaseAgent[GeneratedItinerary]):
         return Agent(
             name=self.name,
             instructions=SYSTEM_PROMPT,
-            model="gpt-4o",
+            model="gpt-5.5",
             tools=[WebSearchTool()],
             output_type=GeneratedItinerary,
         )
