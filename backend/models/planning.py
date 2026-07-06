@@ -21,6 +21,8 @@ class FlightSuggestion(BaseModel):
     duration: str
     stops: str
     note: str = "AI-estimated — not a live fare."
+    googleFlightsUrl: Optional[str] = None
+    skyscannerUrl: Optional[str] = None
 
 
 class HotelSuggestion(BaseModel):
@@ -33,6 +35,7 @@ class HotelSuggestion(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     source: Literal["google-places", "ai-suggested"] = "ai-suggested"
+    bookingUrl: Optional[str] = None
 
 
 class AttractionSuggestion(BaseModel):

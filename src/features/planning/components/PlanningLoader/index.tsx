@@ -14,6 +14,7 @@ const AGENT_TITLES: Record<PlanningStageProgress["agent"], string> = {
   itinerary: "Itinerary agent",
   hotel: "Hotel agent",
   attractions: "Attractions agent",
+  restaurants: "Restaurant agent",
 };
 
 export function PlanningLoader({ stages }: PlanningLoaderProps) {

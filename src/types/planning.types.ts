@@ -7,6 +7,8 @@ export interface FlightSuggestion {
   duration: string;
   stops: string;
   note: string;
+  googleFlightsUrl: string | null;
+  skyscannerUrl: string | null;
 }
 
 export interface HotelSuggestion {
@@ -19,6 +21,7 @@ export interface HotelSuggestion {
   latitude: number | null;
   longitude: number | null;
   source: "google-places" | "ai-suggested";
+  bookingUrl: string | null;
 }
 
 export interface AttractionSuggestion {
@@ -28,6 +31,18 @@ export interface AttractionSuggestion {
   estimatedVisitDuration: string;
   latitude: number | null;
   longitude: number | null;
+}
+
+export interface RestaurantSuggestion {
+  name: string;
+  area: string;
+  cuisine: string;
+  rating: number;
+  priceRange: string;
+  description: string;
+  latitude: number | null;
+  longitude: number | null;
+  source: "google-places" | "ai-suggested";
 }
 
 export interface TransportLeg {
@@ -44,6 +59,7 @@ export interface CityPlan {
   transportFromPrevious: TransportLeg | null;
   hotels: HotelSuggestion[];
   attractions: AttractionSuggestion[];
+  restaurants: RestaurantSuggestion[];
 }
 
 export interface TripPlan {
@@ -55,6 +71,7 @@ export interface TripPlan {
   itinerary: CityPlan[];
   hotels: HotelSuggestion[];
   attractions: AttractionSuggestion[];
+  restaurants: RestaurantSuggestion[];
 }
 
 export interface PlanTripRequest {
@@ -66,7 +83,7 @@ export interface PlanTripRequest {
   includeFlights: boolean;
 }
 
-export type PlanningAgentKey = "planner" | "itinerary" | "hotel" | "attractions";
+export type PlanningAgentKey = "planner" | "itinerary" | "hotel" | "attractions" | "restaurants";
 
 export interface PlanningStageStartEvent {
   type: "stage-start";

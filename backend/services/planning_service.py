@@ -1,7 +1,7 @@
 import json
 from typing import AsyncIterator
 
-from backend.dal import places_client
+from backend.dal import deeplinks, places_client
 from backend.dal.agents.attractions_agent import AttractionsAgent
 from backend.dal.agents.hotel_agent import HotelAgent
 from backend.dal.agents.itinerary_agent import ItineraryAgent
@@ -131,21 +131,18 @@ def _attractions_prompt(city: str, days: int, profile: TravelDiagnosisProfile) -
     )
 
 
-async def suggest_flights(destination: str, profile: TravelDiagnosisProfile, origin: str | None = None) -> list[FlightSuggestion]:
-    result = await _planner_agent.run(_flight_prompt(destination, origin, profile))
-    return result.flights
-
-
-async def suggest_hotels(destination: str, profile: TravelDiagnosisProfile) -> list[HotelSuggestion]:
-    real_hotels = _extract_places_hotels(destination)
-    result = await _hotel_agent.run(_hotel_prompt(destination, profile, real_hotels))
-    source = "google-places" if real_hotels else "ai-suggested"
-    return [hotel.model_copy(update={"source": hotel.source or source}) for hotel in result.hotels]
-
-
-async def suggest_attractions(destination: str, profile: TravelDiagnosisProfile) -> list[AttractionSuggestion]:
-    result = await _attractions_agent.run(_attractions_prompt(destination, DEFAULT_TRIP_DAYS, profile))
-    return result.attractions
+def _restaurants_prompt(city: str, profile: TravelDiagnosisProfile, real_restaurants: list[dict]) -> str:
+    real_restaurants_block = (
+        f"\n\nReal candidate restaurants found via Google Places:\n{json.dumps(real_restaurants, indent=2)}"
+        if real_restaurants
+        else "\n\nNo real restaurant data available — suggest realistic options and mark them as AI-suggested."
+    )
+    return (
+        f"Destination: {city}\n\n"
+        f"Traveler profile:\n{_profile_summary(profile)}"
+        f"{real_restaurants_block}\n\n"
+        "Pick and describe the restaurants that best fit this traveler."
+    )
 
 
 def _build_summary(destination: str, profile: TravelDiagnosisProfile, itinerary: list[ItineraryLeg]) -> str:
@@ -190,7 +187,15 @@ async def stream_trip_plan(
     if include_flights:
         yield {"type": "stage-start", "agent": "planner", "label": "Planner agent is finding flights..."}
         trace = await _planner_agent.run_traced(_flight_prompt(destination, origin, profile))
-        flights = trace.output.flights
+        flights = [
+            flight.model_copy(
+                update={
+                    "googleFlightsUrl": deeplinks.google_flights_url(origin, destination),
+                    "skyscannerUrl": deeplinks.skyscanner_url(origin, destination),
+                }
+            )
+            for flight in trace.output.flights
+        ]
         yield {
             "type": "stage-done",
             "agent": "planner",
@@ -211,13 +216,22 @@ async def stream_trip_plan(
     city_plans: list[CityPlan] = []
     all_hotels: list[HotelSuggestion] = []
     all_attractions: list[AttractionSuggestion] = []
+    all_restaurants: list[RestaurantSuggestion] = []
 
     for leg in legs:
         yield {"type": "stage-start", "agent": "hotel", "leg": leg.city, "label": f"Hotel agent is searching {leg.city}..."}
         real_hotels = _extract_places_hotels(leg.city)
         hotel_trace = await _hotel_agent.run_traced(_hotel_prompt(leg.city, profile, real_hotels))
         source = "google-places" if real_hotels else "ai-suggested"
-        leg_hotels = [hotel.model_copy(update={"source": hotel.source or source}) for hotel in hotel_trace.output.hotels]
+        leg_hotels = [
+            hotel.model_copy(
+                update={
+                    "source": hotel.source or source,
+                    "bookingUrl": deeplinks.booking_url(hotel.name, leg.city),
+                }
+            )
+            for hotel in hotel_trace.output.hotels
+        ]
         all_hotels.extend(leg_hotels)
         yield {
             "type": "stage-done",
@@ -239,6 +253,23 @@ async def stream_trip_plan(
             "response": attractions_trace.raw_response,
         }
 
+        yield {"type": "stage-start", "agent": "restaurants", "leg": leg.city, "label": f"Restaurant agent is searching {leg.city}..."}
+        real_restaurants = _extract_places_restaurants(leg.city)
+        restaurants_trace = await _restaurant_agent.run_traced(_restaurants_prompt(leg.city, profile, real_restaurants))
+        restaurant_source = "google-places" if real_restaurants else "ai-suggested"
+        leg_restaurants = [
+            restaurant.model_copy(update={"source": restaurant.source or restaurant_source})
+            for restaurant in restaurants_trace.output.restaurants
+        ]
+        all_restaurants.extend(leg_restaurants)
+        yield {
+            "type": "stage-done",
+            "agent": "restaurants",
+            "leg": leg.city,
+            "model": restaurants_trace.model,
+            "response": restaurants_trace.raw_response,
+        }
+
         city_plans.append(
             CityPlan(
                 city=leg.city,
@@ -248,6 +279,7 @@ async def stream_trip_plan(
                 transportFromPrevious=leg.transportFromPrevious,
                 hotels=leg_hotels,
                 attractions=leg_attractions,
+                restaurants=leg_restaurants,
             )
         )
 
@@ -260,5 +292,6 @@ async def stream_trip_plan(
         itinerary=city_plans,
         hotels=all_hotels,
         attractions=all_attractions,
+        restaurants=all_restaurants,
     )
     yield {"type": "complete", "plan": plan.model_dump()}
