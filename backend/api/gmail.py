@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
 from backend.dal import google_oauth, token_store
@@ -18,8 +18,8 @@ def gmail_login() -> RedirectResponse:
 
 
 @router.get("/auth/gmail/callback")
-def gmail_callback(request_url: str) -> RedirectResponse:
-    credentials = google_oauth.exchange_code_for_credentials(request_url)
+def gmail_callback(request: Request) -> RedirectResponse:
+    credentials = google_oauth.exchange_code_for_credentials(str(request.url))
     token_store.save_credentials(credentials)
     return RedirectResponse(f"{FRONTEND_URL}/diagnosis?gmail=connected")
 
