@@ -12,7 +12,14 @@ export function TripHeroCard({ trip }: TripHeroCardProps) {
   return (
     <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
       <div className="relative h-56 w-full">
-        <Image src={trip.image} alt={trip.title} fill className="object-cover" />
+        <Image
+          src={trip.image}
+          alt={trip.title}
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
+          className="object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="mb-3 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100">

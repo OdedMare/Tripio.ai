@@ -45,10 +45,13 @@ export function AppShell() {
           </div>
 
           <div className="mb-5 space-y-2">
-            <button className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+            <Link
+              href="/diagnosis"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
               <PlusCircle size={18} />
               New trip
-            </button>
+            </Link>
             <button className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
               <Compass size={18} />
               Explore ideas
