@@ -13,6 +13,9 @@ FIELD_MASK = ",".join(
         "places.priceLevel",
         "places.location",
         "places.types",
+        "places.editorialSummary",
+        "places.googleMapsUri",
+        "places.websiteUri",
     ]
 )
 
@@ -70,3 +73,43 @@ def autocomplete_places(query: str, max_results: int = 6) -> list[dict]:
             }
         )
     return results
+
+
+def search_attractions(destination: str, max_results: int = 8) -> list[dict]:
+    """Text-search Places API (New) for attractions in the given destination."""
+    response = requests.post(
+        PLACES_SEARCH_TEXT_URL,
+        json={
+            "textQuery": f"tourist attractions in {destination}",
+            "includedType": "tourist_attraction",
+            "maxResultCount": max_results,
+        },
+        headers={
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": os.environ["GOOGLE_PLACES_API_KEY"],
+            "X-Goog-FieldMask": FIELD_MASK,
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json().get("places", [])
+
+
+def search_restaurants(destination: str, max_results: int = 8) -> list[dict]:
+    """Text-search Places API (New) for restaurants in the given destination."""
+    response = requests.post(
+        PLACES_SEARCH_TEXT_URL,
+        json={
+            "textQuery": f"restaurants in {destination}",
+            "includedType": "restaurant",
+            "maxResultCount": max_results,
+        },
+        headers={
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": os.environ["GOOGLE_PLACES_API_KEY"],
+            "X-Goog-FieldMask": FIELD_MASK,
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json().get("places", [])
