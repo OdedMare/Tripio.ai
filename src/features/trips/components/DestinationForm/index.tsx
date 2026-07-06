@@ -6,6 +6,17 @@ import { ArrowRight, MapPin, Sparkles } from "lucide-react";
 import { useTripIntentStore } from "@/store/tripIntent.store";
 import { PlaceAutocompleteInput } from "@/features/trips/components/PlaceAutocompleteInput";
 
+const DURATION_PRESETS = [
+  { label: "3 days", days: 3 },
+  { label: "1 week", days: 7 },
+  { label: "2 weeks", days: 14 },
+  { label: "1 month", days: 30 },
+];
+
+function toDateInputValue(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
 export function DestinationForm() {
   const router = useRouter();
   const setIntent = useTripIntentStore((state) => state.setIntent);
@@ -16,6 +27,15 @@ export function DestinationForm() {
   const [endDate, setEndDate] = useState("");
 
   const canContinue = destination.trim().length > 0;
+
+  const applyDurationPreset = (days: number) => {
+    const start = startDate ? new Date(startDate) : new Date();
+    const end = new Date(start);
+    end.setDate(end.getDate() + days - 1);
+
+    setStartDate(toDateInputValue(start));
+    setEndDate(toDateInputValue(end));
+  };
 
   const handleContinue = () => {
     if (!canContinue) return;
@@ -66,6 +86,22 @@ export function DestinationForm() {
                 Destination
               </label>
               <PlaceAutocompleteInput id="destination" value={destination} onChange={setDestination} placeholder="Kyoto, Japan" />
+            </div>
+
+            <div>
+              <p className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Trip length</p>
+              <div className="flex flex-wrap gap-2">
+                {DURATION_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => applyDurationPreset(preset.days)}
+                    className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

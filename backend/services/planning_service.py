@@ -6,6 +6,7 @@ from backend.dal.agents.attractions_agent import AttractionsAgent
 from backend.dal.agents.hotel_agent import HotelAgent
 from backend.dal.agents.itinerary_agent import ItineraryAgent
 from backend.dal.agents.planner_agent import PlannerAgent
+from backend.dal.agents.restaurant_agent import RestaurantAgent
 from backend.models.diagnosis import TravelDiagnosisProfile
 from backend.models.planning import (
     AttractionSuggestion,
@@ -13,6 +14,7 @@ from backend.models.planning import (
     FlightSuggestion,
     HotelSuggestion,
     ItineraryLeg,
+    RestaurantSuggestion,
     TripPlan,
 )
 
@@ -20,6 +22,7 @@ _planner_agent = PlannerAgent()
 _hotel_agent = HotelAgent()
 _attractions_agent = AttractionsAgent()
 _itinerary_agent = ItineraryAgent()
+_restaurant_agent = RestaurantAgent()
 
 DEFAULT_TRIP_DAYS = 7
 
@@ -60,6 +63,29 @@ def _extract_places_hotels(destination: str) -> list[dict]:
             }
         )
     return hotels
+
+
+def _extract_places_restaurants(destination: str) -> list[dict]:
+    if not places_client.is_configured():
+        return []
+    try:
+        raw_places = places_client.search_restaurants(destination)
+    except Exception:
+        return []
+
+    restaurants = []
+    for place in raw_places:
+        location = place.get("location", {})
+        restaurants.append(
+            {
+                "name": place.get("displayName", {}).get("text", "Unknown restaurant"),
+                "area": place.get("formattedAddress", destination),
+                "rating": place.get("rating", 4.0),
+                "latitude": location.get("latitude"),
+                "longitude": location.get("longitude"),
+            }
+        )
+    return restaurants
 
 
 def _flight_prompt(destination: str, origin: str | None, profile: TravelDiagnosisProfile) -> str:

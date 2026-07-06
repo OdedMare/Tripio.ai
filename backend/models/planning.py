@@ -44,6 +44,18 @@ class AttractionSuggestion(BaseModel):
     longitude: Optional[float] = None
 
 
+class RestaurantSuggestion(BaseModel):
+    name: str
+    area: str
+    cuisine: str
+    rating: float
+    priceRange: str
+    description: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    source: Literal["google-places", "ai-suggested"] = "ai-suggested"
+
+
 class TransportLeg(BaseModel):
     mode: str
     duration: str
@@ -66,6 +78,7 @@ class CityPlan(BaseModel):
     transportFromPrevious: Optional[TransportLeg] = None
     hotels: list[HotelSuggestion]
     attractions: list[AttractionSuggestion]
+    restaurants: list[RestaurantSuggestion]
 
 
 class TripPlan(BaseModel):
@@ -77,6 +90,7 @@ class TripPlan(BaseModel):
     itinerary: list[CityPlan]
     hotels: list[HotelSuggestion]
     attractions: list[AttractionSuggestion]
+    restaurants: list[RestaurantSuggestion]
 
 
 class HotelSearchRequest(BaseModel):
@@ -95,6 +109,10 @@ class GeneratedHotels(BaseModel):
 
 class GeneratedAttractions(BaseModel):
     attractions: list[AttractionSuggestion]
+
+
+class GeneratedRestaurants(BaseModel):
+    restaurants: list[RestaurantSuggestion]
 
 
 class GeneratedFlights(BaseModel):

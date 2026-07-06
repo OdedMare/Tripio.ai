@@ -17,6 +17,17 @@ export interface TripDay {
   notes: string;
 }
 
+export interface TripFlight {
+  airline: string;
+  route: string;
+  estimatedPriceRange: string;
+  duration: string;
+  stops: string;
+  note: string;
+  skyscannerUrl?: string;
+  googleFlightsUrl?: string;
+}
+
 export interface Hotel {
   id: string;
   name: string;
@@ -26,6 +37,14 @@ export interface Hotel {
   amenities: string[];
   image: string;
   description: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUri?: string | null;
+  websiteUri?: string | null;
+  bookingUrl?: string | null;
+  airbnbUrl?: string | null;
+  dayStart?: number;
+  dayEnd?: number;
 }
 
 export interface Restaurant {
@@ -37,6 +56,11 @@ export interface Restaurant {
   priceRange: string;
   image: string;
   description: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUri?: string | null;
+  websiteUri?: string | null;
+  dayNumber?: number;
 }
 
 export interface Attraction {
@@ -47,6 +71,12 @@ export interface Attraction {
   rating: number;
   image: string;
   description: string;
+  estimatedVisitDuration?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUri?: string | null;
+  websiteUri?: string | null;
+  dayNumber?: number;
 }
 
 export interface TravelProfile {
@@ -69,6 +99,7 @@ export interface Trip {
   highlights: string[];
   createdAt: string;
   days: TripDay[];
+  flights: TripFlight[];
   hotels: Hotel[];
   restaurants: Restaurant[];
   attractions: Attraction[];
