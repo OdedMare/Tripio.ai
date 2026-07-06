@@ -1,4 +1,3 @@
-import { mockTrips } from "@/mock/trip.mock";
 import type { Trip } from "@/types/trip.types";
 
 const delay = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -6,18 +5,12 @@ const delay = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
 export const tripService = {
   async getTrips(): Promise<Trip[]> {
     await delay();
-    return mockTrips.map((trip) => ({ ...trip }));
+    return [];
   },
 
   async getTripById(tripId: string): Promise<Trip> {
     await delay();
-    const trip = mockTrips.find((item) => item.id === tripId);
-
-    if (!trip) {
-      throw new Error(`Trip ${tripId} not found`);
-    }
-
-    return { ...trip };
+    throw new Error(`Trip ${tripId} not found`);
   },
 
   async createTrip(prompt: string): Promise<Trip> {

@@ -1,11 +1,10 @@
-import { mockProfile } from "@/mock/trip.mock";
 import type { TravelProfile } from "@/types/trip.types";
 
 const delay = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const profileService = {
-  async getProfile(): Promise<TravelProfile> {
+  async getProfile(): Promise<TravelProfile | null> {
     await delay();
-    return { ...mockProfile };
+    return null;
   },
 };
