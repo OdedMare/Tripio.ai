@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { selectCurrentQuestion, selectQuestionHistory, useDiagnosisStore } from "@/store/diagnosis.store";
+import { selectCurrentQuestion, useDiagnosisStore } from "@/store/diagnosis.store";
 import { useTripIntentStore } from "@/store/tripIntent.store";
 import { GmailConnectCard } from "@/features/diagnosis/components/GmailConnectCard";
 import { QuestionCard } from "@/features/diagnosis/components/QuestionCard";
@@ -10,9 +10,9 @@ import { ProfilePreviewPanel } from "@/features/diagnosis/components/ProfilePrev
 import { ProfileSummary } from "@/features/diagnosis/components/ProfileSummary";
 
 export function DiagnosisFlow() {
-  const { answers, profile, isComplete, isLoading, start, selectOption, goBack } = useDiagnosisStore();
+  const { questions, answers, profile, isComplete, isLoading, start, selectOption, goBack } = useDiagnosisStore();
   const currentQuestion = useDiagnosisStore(selectCurrentQuestion);
-  const questionHistory = useDiagnosisStore(selectQuestionHistory);
+  const questionHistory = useMemo(() => questions.slice(0, answers.length), [questions, answers.length]);
   const tripIntentSource = useTripIntentStore((state) => state.source);
 
   // The "start from scratch" flow already picked a destination before
