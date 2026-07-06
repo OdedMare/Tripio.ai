@@ -3,8 +3,7 @@ import { diagnosisService } from "@/services/diagnosis.service";
 import type { DiagnosisAnswer, DiagnosisQuestion, TravelDiagnosisProfile } from "@/types/diagnosis.types";
 
 interface DiagnosisState {
-  questionHistory: DiagnosisQuestion[];
-  currentQuestion: DiagnosisQuestion | null;
+  questions: DiagnosisQuestion[];
   answers: DiagnosisAnswer[];
   profile: TravelDiagnosisProfile | null;
   isLoading: boolean;
@@ -16,52 +15,51 @@ interface DiagnosisState {
 }
 
 export const useDiagnosisStore = create<DiagnosisState>((set, get) => ({
-  questionHistory: [],
-  currentQuestion: null,
+  questions: [],
   answers: [],
   profile: null,
   isLoading: false,
   isComplete: false,
 
   start: async () => {
-    if (get().currentQuestion || get().isLoading) return;
+    if (get().questions.length > 0 || get().isLoading) return;
     set({ isLoading: true });
-    const question = await diagnosisService.getNextQuestion([], []);
-    set({ currentQuestion: question, isLoading: false });
+    const questions = await diagnosisService.getQuestionSet();
+    set({ questions, isLoading: false });
   },
 
   selectOption: async (questionId, optionId) => {
-    const { answers, questionHistory, currentQuestion, isLoading } = get();
-    if (!currentQuestion || currentQuestion.id !== questionId || isLoading) return;
+    const { questions, answers, isLoading } = get();
+    const current = questions[answers.length];
+    if (!current || current.id !== questionId || isLoading) return;
 
     const nextAnswers = [...answers, { questionId, optionId }];
-    const nextHistory = [...questionHistory, currentQuestion];
 
-    set({ answers: nextAnswers, questionHistory: nextHistory, isLoading: true });
-
-    if (currentQuestion.isLastQuestion) {
-      const profile = await diagnosisService.buildProfile(nextAnswers, nextHistory);
-      set({ profile, isComplete: true, isLoading: false, currentQuestion: null });
+    if (current.isLastQuestion || nextAnswers.length >= questions.length) {
+      set({ answers: nextAnswers, isLoading: true });
+      const profile = await diagnosisService.buildProfile(nextAnswers, questions.slice(0, nextAnswers.length));
+      set({ profile, isComplete: true, isLoading: false });
       return;
     }
 
-    const question = await diagnosisService.getNextQuestion(nextAnswers, nextHistory);
-    set({ currentQuestion: question, isLoading: false });
+    set({ answers: nextAnswers });
   },
 
   goBack: () => {
-    const { questionHistory } = get();
-    if (questionHistory.length === 0) return;
-
-    const previousQuestion = questionHistory[questionHistory.length - 1];
-    set({
-      currentQuestion: previousQuestion,
-      questionHistory: questionHistory.slice(0, -1),
-      answers: get().answers.slice(0, -1),
-      isComplete: false,
-    });
+    const { answers } = get();
+    if (answers.length === 0) return;
+    set({ answers: answers.slice(0, -1), isComplete: false });
   },
 
   reset: () =>
-    set({ questionHistory: [], currentQuestion: null, answers: [], profile: null, isComplete: false }),
+    set({ questions: [], answers: [], profile: null, isComplete: false, isLoading: false }),
 }));
+
+export function selectCurrentQuestion(state: DiagnosisState): DiagnosisQuestion | null {
+  if (state.isComplete) return null;
+  return state.questions[state.answers.length] ?? null;
+}
+
+export function selectQuestionHistory(state: DiagnosisState): DiagnosisQuestion[] {
+  return state.questions.slice(0, state.answers.length);
+}
