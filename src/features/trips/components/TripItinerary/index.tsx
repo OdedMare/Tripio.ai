@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarPlus, MapPin, Plane, Plus, Sparkles, Star, TrainFront, Trash2, Utensils } from "lucide-react";
+import { CalendarPlus, MapPin, Plane, Plus, Sparkles, Star, Trash2, Utensils } from "lucide-react";
 import { useTripStore } from "@/store/trip.store";
 import { downloadTripIcs } from "@/features/planning/utils/calendar";
 import { buildTripMapsUrl } from "@/features/planning/utils/maps";
@@ -15,6 +15,10 @@ interface TripItineraryProps {
 
 type OpenDrawer = { dayNumber: number; kind: "attraction" | "restaurant" } | null;
 
+function generatePlaceId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function TripItinerary({ trip }: TripItineraryProps) {
   const updateTrip = useTripStore((state) => state.updateTrip);
   const [openDrawer, setOpenDrawer] = useState<OpenDrawer>(null);
@@ -27,7 +31,7 @@ export function TripItinerary({ trip }: TripItineraryProps) {
       attractions: [
         ...trip.attractions,
         {
-          id: `attraction-${Date.now()}`,
+          id: generatePlaceId("attraction"),
           name: place.name,
           location: day.title,
           category: place.types[0] ?? "Attraction",
@@ -51,7 +55,7 @@ export function TripItinerary({ trip }: TripItineraryProps) {
       restaurants: [
         ...trip.restaurants,
         {
-          id: `restaurant-${Date.now()}`,
+          id: generatePlaceId("restaurant"),
           name: place.name,
           location: day.title,
           cuisine: place.types[0] ?? "Restaurant",

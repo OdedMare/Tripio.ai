@@ -45,7 +45,12 @@ class GeneratedQuestion(BaseModel):
     title: str
     subtitle: str
     options: list[DiagnosisOption]
-    isLastQuestion: bool
+
+
+class GeneratedQuestionSet(BaseModel):
+    """The agent generates the full ordered question set in a single call."""
+
+    questions: list[GeneratedQuestion]
 
 
 class DiagnosisQuestion(BaseModel):
