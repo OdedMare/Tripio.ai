@@ -37,6 +37,7 @@ export interface DiagnosisQuestion {
   title: string;
   subtitle: string;
   options: DiagnosisOption[];
+  isLastQuestion: boolean;
 }
 
 export interface DiagnosisAnswer {

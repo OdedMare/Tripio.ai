@@ -1,18 +1,20 @@
+const ESTIMATED_MIN_QUESTIONS = 5;
+const ESTIMATED_MAX_QUESTIONS = 12;
+
 interface ProgressIndicatorProps {
-  current: number;
-  total: number;
+  step: number;
+  isLastQuestion: boolean;
 }
 
-export function ProgressIndicator({ current, total }: ProgressIndicatorProps) {
-  const percent = Math.round((current / total) * 100);
+export function ProgressIndicator({ step, isLastQuestion }: ProgressIndicatorProps) {
+  const estimatedTotal = Math.max(ESTIMATED_MIN_QUESTIONS, Math.min(step, ESTIMATED_MAX_QUESTIONS));
+  const percent = isLastQuestion ? 100 : Math.round((step / estimatedTotal) * 90);
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-500">
-        <span>
-          Question {current} of {total}
-        </span>
-        <span>{percent}%</span>
+        <span>Question {step}</span>
+        <span>{isLastQuestion ? "Almost done" : "Building your profile"}</span>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div

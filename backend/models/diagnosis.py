@@ -1,14 +1,28 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
+TravelerType = Literal["explorer", "relaxer", "culture-seeker", "foodie", "thrill-seeker", "connector"]
+Pace = Literal["relaxed", "balanced", "adventurous"]
+ComfortLevel = Literal["backpacker", "comfortable", "premium", "luxury"]
+PlanningStyle = Literal["fully-planned", "loosely-planned", "spontaneous"]
+Budget = Literal["budget", "midRange", "luxury"]
+
+Icon = Literal[
+    "compass", "sun", "landmark", "utensils", "mountain-snow", "users", "coffee",
+    "scale", "zap", "calendar-x", "camera-off", "bus", "bed-double", "trees",
+    "building-2", "map-pin", "backpack", "home", "gem", "crown", "list-checks",
+    "shuffle", "dice-5", "sparkles", "palmtree", "house", "key", "footprints",
+    "car", "car-front", "train",
+]
+
 
 class DiagnosisTraits(BaseModel):
-    travelerType: Optional[str] = None
-    pace: Optional[str] = None
-    comfortLevel: Optional[str] = None
-    planningStyle: Optional[str] = None
-    preferredBudget: Optional[str] = None
+    travelerType: Optional[TravelerType] = None
+    pace: Optional[Pace] = None
+    comfortLevel: Optional[ComfortLevel] = None
+    planningStyle: Optional[PlanningStyle] = None
+    preferredBudget: Optional[Budget] = None
     interests: Optional[list[str]] = None
     dealbreakers: Optional[list[str]] = None
     hotelStyle: Optional[str] = None
@@ -20,8 +34,18 @@ class DiagnosisOption(BaseModel):
     id: str
     label: str
     description: str
-    icon: str
+    icon: Icon
     traits: DiagnosisTraits
+
+
+class GeneratedQuestion(BaseModel):
+    """Shape the Diagnosis Agent produces — no `order`, the service layer sequences it."""
+
+    id: str
+    title: str
+    subtitle: str
+    options: list[DiagnosisOption]
+    isLastQuestion: bool
 
 
 class DiagnosisQuestion(BaseModel):
@@ -30,6 +54,7 @@ class DiagnosisQuestion(BaseModel):
     title: str
     subtitle: str
     options: list[DiagnosisOption]
+    isLastQuestion: bool = False
 
 
 class DiagnosisAnswer(BaseModel):
@@ -44,11 +69,11 @@ class NextQuestionRequest(BaseModel):
 
 class TravelDiagnosisProfile(BaseModel):
     id: str
-    travelerType: str
-    pace: str
-    preferredBudget: str
-    comfortLevel: str
-    planningStyle: str
+    travelerType: TravelerType
+    pace: Pace
+    preferredBudget: Budget
+    comfortLevel: ComfortLevel
+    planningStyle: PlanningStyle
     accommodationStyle: str
     hotelStyle: str
     foodStyle: str

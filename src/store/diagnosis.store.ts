@@ -9,7 +9,6 @@ interface DiagnosisState {
   profile: TravelDiagnosisProfile | null;
   isLoading: boolean;
   isComplete: boolean;
-  totalQuestions: number;
   start: () => Promise<void>;
   selectOption: (questionId: string, optionId: string) => Promise<void>;
   goBack: () => void;
@@ -23,7 +22,6 @@ export const useDiagnosisStore = create<DiagnosisState>((set, get) => ({
   profile: null,
   isLoading: false,
   isComplete: false,
-  totalQuestions: diagnosisService.totalQuestions,
 
   start: async () => {
     if (get().currentQuestion || get().isLoading) return;
@@ -33,16 +31,15 @@ export const useDiagnosisStore = create<DiagnosisState>((set, get) => ({
   },
 
   selectOption: async (questionId, optionId) => {
-    const { answers, questionHistory, currentQuestion, totalQuestions } = get();
+    const { answers, questionHistory, currentQuestion } = get();
     if (!currentQuestion || currentQuestion.id !== questionId) return;
 
     const nextAnswers = [...answers, { questionId, optionId }];
     const nextHistory = [...questionHistory, currentQuestion];
-    const isLastQuestion = nextAnswers.length >= totalQuestions;
 
     set({ answers: nextAnswers, questionHistory: nextHistory, isLoading: true });
 
-    if (isLastQuestion) {
+    if (currentQuestion.isLastQuestion) {
       const profile = await diagnosisService.buildProfile(nextAnswers, nextHistory);
       set({ profile, isComplete: true, isLoading: false, currentQuestion: null });
       return;

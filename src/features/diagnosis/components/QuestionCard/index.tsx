@@ -8,21 +8,20 @@ import type { DiagnosisQuestion } from "@/types/diagnosis.types";
 interface QuestionCardProps {
   question: DiagnosisQuestion;
   step: number;
-  total: number;
   selectedOptionId: string | null;
   canGoBack: boolean;
   onSelect: (optionId: string) => void;
   onBack: () => void;
 }
 
-export function QuestionCard({ question, step, total, selectedOptionId, canGoBack, onSelect, onBack }: QuestionCardProps) {
+export function QuestionCard({ question, step, selectedOptionId, canGoBack, onSelect, onBack }: QuestionCardProps) {
   return (
     <div
       key={question.id}
       className="w-full max-w-xl rounded-[28px] border border-slate-200/70 bg-white/90 p-8 shadow-[0_24px_80px_-24px_rgba(15,23,42,0.25)] backdrop-blur animate-fade-in-up"
     >
       <div className="mb-6">
-        <ProgressIndicator current={step} total={total} />
+        <ProgressIndicator step={step} isLastQuestion={question.isLastQuestion} />
       </div>
 
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Travel style</p>

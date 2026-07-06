@@ -15,7 +15,6 @@ export function DiagnosisFlow() {
     profile,
     isComplete,
     isLoading,
-    totalQuestions,
     start,
     selectOption,
     goBack,
@@ -51,7 +50,6 @@ export function DiagnosisFlow() {
               <QuestionCard
                 question={currentQuestion}
                 step={step}
-                total={totalQuestions}
                 selectedOptionId={null}
                 canGoBack={questionHistory.length > 0}
                 onSelect={(optionId) => void selectOption(currentQuestion.id, optionId)}

@@ -281,4 +281,5 @@ FALLBACK_QUESTIONS: list[DiagnosisQuestion] = [
 def get_fallback_question(answered_count: int) -> DiagnosisQuestion:
     index = min(answered_count, len(FALLBACK_QUESTIONS) - 1)
     question = FALLBACK_QUESTIONS[index]
-    return question.model_copy(update={"order": answered_count + 1})
+    is_last = index == len(FALLBACK_QUESTIONS) - 1
+    return question.model_copy(update={"order": answered_count + 1, "isLastQuestion": is_last})
