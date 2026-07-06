@@ -1,9 +1,9 @@
 "use client";
 
-import { CalendarPlus, MapPin, Plane, Sparkles, Star } from "lucide-react";
+import { CalendarPlus, MapPin, Plane, Sparkles, Star, TrainFront } from "lucide-react";
 import { downloadTripIcs } from "@/features/planning/utils/calendar";
 import { buildTripMapsUrl } from "@/features/planning/utils/maps";
-import type { TripPlan } from "@/types/planning.types";
+import type { AttractionSuggestion, CityPlan, TripPlan } from "@/types/planning.types";
 
 interface TripPlanResultProps {
   plan: TripPlan;
@@ -69,52 +69,97 @@ export function TripPlanResult({ plan }: TripPlanResultProps) {
           </section>
         )}
 
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/90 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Hotels</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {plan.hotels.map((hotel, index) => (
-              <div key={index} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-800">{hotel.name}</p>
-                  <div className="flex shrink-0 items-center gap-1 text-xs font-semibold text-amber-600">
-                    <Star size={12} className="fill-amber-500 text-amber-500" />
-                    {hotel.rating.toFixed(1)}
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500">{hotel.area}</p>
-                <p className="mt-2 text-sm text-slate-600">{hotel.description}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {hotel.amenities.map((amenity) => (
-                    <span key={amenity} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm">
-                      {amenity}
-                    </span>
+        {plan.itinerary.length > 0 && (
+          <section className="rounded-[28px] border border-slate-200/70 bg-white/90 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-slate-900">Day-by-day itinerary</h2>
+            <div className="space-y-6">
+              {plan.itinerary.map((leg) => (
+                <CityLeg key={leg.city} leg={leg} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function distributeAttractions(attractions: AttractionSuggestion[], days: number): AttractionSuggestion[][] {
+  const buckets: AttractionSuggestion[][] = Array.from({ length: days }, () => []);
+  attractions.forEach((attraction, index) => {
+    buckets[index % days].push(attraction);
+  });
+  return buckets;
+}
+
+function CityLeg({ leg }: { leg: CityPlan }) {
+  const dayBuckets = distributeAttractions(leg.attractions, leg.days);
+  const primaryHotel = leg.hotels[0];
+
+  return (
+    <div>
+      {leg.transportFromPrevious && (
+        <div className="mb-3 flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-500">
+          <TrainFront size={14} className="shrink-0 text-slate-400" />
+          <span>
+            <span className="font-semibold text-slate-700">{leg.transportFromPrevious.mode}</span> ·{" "}
+            {leg.transportFromPrevious.duration} · {leg.transportFromPrevious.notes}
+          </span>
+        </div>
+      )}
+
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="text-base font-semibold text-slate-900">{leg.city}</h3>
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+          Day {leg.startDay}
+          {leg.endDay !== leg.startDay ? `–${leg.endDay}` : ""}
+        </span>
+      </div>
+
+      {primaryHotel && (
+        <div className="mb-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-slate-800">{primaryHotel.name}</p>
+            <div className="flex shrink-0 items-center gap-1 text-xs font-semibold text-amber-600">
+              <Star size={12} className="fill-amber-500 text-amber-500" />
+              {primaryHotel.rating.toFixed(1)}
+            </div>
+          </div>
+          <p className="text-xs text-slate-500">{primaryHotel.area}</p>
+          <p className="mt-2 text-sm text-slate-600">{primaryHotel.description}</p>
+          {primaryHotel.source === "google-places" && (
+            <p className="mt-2 text-[11px] uppercase tracking-wide text-slate-400">Verified via Google Places</p>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {dayBuckets.map((dayAttractions, index) => {
+          const dayNumber = leg.startDay + index;
+          return (
+            <div key={dayNumber} className="rounded-2xl border border-slate-100 p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day {dayNumber}</p>
+              {dayAttractions.length === 0 ? (
+                <p className="text-sm text-slate-400">Free time to explore {leg.city}.</p>
+              ) : (
+                <div className="space-y-2">
+                  {dayAttractions.map((attraction, attractionIndex) => (
+                    <div key={attractionIndex} className="rounded-xl bg-slate-50 p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-slate-800">{attraction.name}</p>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 shadow-sm">
+                          {attraction.category}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-600">{attraction.description}</p>
+                      <p className="mt-1 text-xs text-slate-400">{attraction.estimatedVisitDuration}</p>
+                    </div>
                   ))}
                 </div>
-                {hotel.source === "google-places" && (
-                  <p className="mt-2 text-[11px] uppercase tracking-wide text-slate-400">Verified via Google Places</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/90 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Attractions</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {plan.attractions.map((attraction, index) => (
-              <div key={index} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-800">{attraction.name}</p>
-                  <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm">
-                    {attraction.category}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-slate-600">{attraction.description}</p>
-                <p className="mt-2 text-xs text-slate-400">{attraction.estimatedVisitDuration}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import os
 import requests
 
 PLACES_SEARCH_TEXT_URL = "https://places.googleapis.com/v1/places:searchText"
+PLACES_AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete"
 
 FIELD_MASK = ",".join(
     [
@@ -38,3 +39,34 @@ def search_hotels(destination: str, max_results: int = 6) -> list[dict]:
     )
     response.raise_for_status()
     return response.json().get("places", [])
+
+
+def autocomplete_places(query: str, max_results: int = 6) -> list[dict]:
+    """Suggest cities/airports/regions matching the query, via Places API (New) autocomplete."""
+    response = requests.post(
+        PLACES_AUTOCOMPLETE_URL,
+        json={
+            "input": query,
+            "includedPrimaryTypes": ["locality", "airport", "administrative_area_level_1", "country"],
+        },
+        headers={
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": os.environ["GOOGLE_PLACES_API_KEY"],
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
+    suggestions = response.json().get("suggestions", [])
+
+    results = []
+    for suggestion in suggestions[:max_results]:
+        prediction = suggestion.get("placePrediction")
+        if not prediction:
+            continue
+        results.append(
+            {
+                "placeId": prediction.get("placeId"),
+                "text": prediction.get("text", {}).get("text", ""),
+            }
+        )
+    return results

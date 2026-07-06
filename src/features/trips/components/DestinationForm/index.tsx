@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, MapPin, Sparkles } from "lucide-react";
 import { useTripIntentStore } from "@/store/tripIntent.store";
+import { PlaceAutocompleteInput } from "@/features/trips/components/PlaceAutocompleteInput";
 
 export function DestinationForm() {
   const router = useRouter();
   const setIntent = useTripIntentStore((state) => state.setIntent);
 
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -19,11 +21,17 @@ export function DestinationForm() {
     if (!canContinue) return;
 
     const dates = startDate && endDate ? `${startDate} to ${endDate}` : null;
+    const totalDays =
+      startDate && endDate
+        ? Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+        : null;
 
     setIntent({
       source: "scratch",
+      origin: origin.trim() || null,
       destination: destination.trim(),
       dates,
+      totalDays: totalDays && totalDays > 0 ? totalDays : null,
       includeFlights: true,
     });
 
@@ -47,16 +55,17 @@ export function DestinationForm() {
 
           <div className="mt-6 space-y-4">
             <div>
+              <label htmlFor="origin" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                From
+              </label>
+              <PlaceAutocompleteInput id="origin" value={origin} onChange={setOrigin} placeholder="Tel Aviv, Israel" />
+            </div>
+
+            <div>
               <label htmlFor="destination" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Destination
               </label>
-              <input
-                id="destination"
-                value={destination}
-                onChange={(event) => setDestination(event.target.value)}
-                placeholder="Kyoto, Japan"
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-slate-400"
-              />
+              <PlaceAutocompleteInput id="destination" value={destination} onChange={setDestination} placeholder="Kyoto, Japan" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">

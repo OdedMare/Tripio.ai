@@ -12,17 +12,24 @@ export function buildTripIcs(plan: TripPlan): string {
   const now = formatIcsDate(new Date());
   const uid = `tripio-${Date.now()}@tripio.ai`;
 
-  const hotelLines = plan.hotels.slice(0, 1).map((hotel) => `Stay: ${hotel.name} (${hotel.area})`);
-  const attractionLines = plan.attractions.map((attraction) => `- ${attraction.name} (${attraction.estimatedVisitDuration})`);
+  const itineraryLines =
+    plan.itinerary.length > 0
+      ? plan.itinerary.flatMap((leg) => {
+          const dayRange = leg.endDay !== leg.startDay ? `Day ${leg.startDay}-${leg.endDay}` : `Day ${leg.startDay}`;
+          const hotel = leg.hotels[0];
+          const lines = [`${dayRange}: ${leg.city}${hotel ? ` — Stay: ${hotel.name}` : ""}`];
+          for (const attraction of leg.attractions) {
+            lines.push(`  - ${attraction.name} (${attraction.estimatedVisitDuration})`);
+          }
+          return lines;
+        })
+      : [
+          ...plan.hotels.slice(0, 1).map((hotel) => `Stay: ${hotel.name} (${hotel.area})`),
+          plan.attractions.length > 0 ? "Planned attractions:" : "",
+          ...plan.attractions.map((attraction) => `- ${attraction.name} (${attraction.estimatedVisitDuration})`),
+        ];
 
-  const description = [
-    plan.summary,
-    ...hotelLines,
-    attractionLines.length > 0 ? "Planned attractions:" : "",
-    ...attractionLines,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const description = [plan.summary, ...itineraryLines].filter(Boolean).join("\n");
 
   return [
     "BEGIN:VCALENDAR",

@@ -12,7 +12,7 @@ import type { PlanningStageProgress, TripPlan } from "@/types/planning.types";
 export function TripPlanPage() {
   const router = useRouter();
   const profile = useDiagnosisStore((state) => state.profile);
-  const { destination, dates, includeFlights } = useTripIntentStore();
+  const { origin, destination, dates, totalDays, includeFlights } = useTripIntentStore();
 
   const [plan, setPlan] = useState<TripPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,14 +28,14 @@ export function TripPlanPage() {
 
     void planningService
       .planTripStream(
-        { destination, dates, profile, includeFlights },
+        { destination, origin, dates, totalDays, profile, includeFlights },
         (event) => {
           if (event.type === "stage-start") {
-            setStages((prev) => [...prev, { agent: event.agent, label: event.label, status: "running" }]);
+            setStages((prev) => [...prev, { agent: event.agent, leg: event.leg, label: event.label, status: "running" }]);
           } else if (event.type === "stage-done") {
             setStages((prev) =>
               prev.map((stage) =>
-                stage.agent === event.agent
+                stage.agent === event.agent && stage.leg === event.leg
                   ? { ...stage, status: "done", model: event.model, response: event.response }
                   : stage,
               ),

@@ -6,6 +6,7 @@ load_dotenv()
 
 from backend.api.diagnosis import router as diagnosis_router  # noqa: E402
 from backend.api.gmail import router as gmail_router  # noqa: E402
+from backend.api.places import router as places_router  # noqa: E402
 from backend.api.planning import router as planning_router  # noqa: E402
 
 app = FastAPI(title="Tripio Agents API")
@@ -19,6 +20,7 @@ app.add_middleware(
 
 app.include_router(diagnosis_router)
 app.include_router(gmail_router)
+app.include_router(places_router)
 app.include_router(planning_router)
 
 

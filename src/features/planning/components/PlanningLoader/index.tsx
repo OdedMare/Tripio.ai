@@ -11,6 +11,7 @@ interface PlanningLoaderProps {
 
 const AGENT_TITLES: Record<PlanningStageProgress["agent"], string> = {
   planner: "Planner agent",
+  itinerary: "Itinerary agent",
   hotel: "Hotel agent",
   attractions: "Attractions agent",
 };
@@ -30,7 +31,7 @@ export function PlanningLoader({ stages }: PlanningLoaderProps) {
         {stages.length > 0 && (
           <div className="w-full space-y-2 text-left">
             {stages.map((stage) => (
-              <StageRow key={stage.agent} stage={stage} />
+              <StageRow key={`${stage.agent}-${stage.leg ?? ""}`} stage={stage} />
             ))}
           </div>
         )}
@@ -60,7 +61,10 @@ function StageRow({ stage }: { stage: PlanningStageProgress }) {
             </span>
           )}
           <div>
-            <p className="text-sm font-semibold text-slate-800">{AGENT_TITLES[stage.agent]}</p>
+            <p className="text-sm font-semibold text-slate-800">
+              {AGENT_TITLES[stage.agent]}
+              {stage.leg && <span className="font-normal text-slate-500"> — {stage.leg}</span>}
+            </p>
             <p className="text-xs text-slate-500">{stage.label}</p>
           </div>
         </div>

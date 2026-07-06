@@ -16,6 +16,8 @@ async def plan_trip(payload: PlanTripRequest) -> TripPlan:
         dates=payload.dates,
         profile=payload.profile,
         include_flights=payload.includeFlights,
+        origin=payload.origin,
+        total_days=payload.totalDays,
     )
 
 
@@ -27,6 +29,8 @@ async def plan_trip_stream(payload: PlanTripRequest) -> StreamingResponse:
             dates=payload.dates,
             profile=payload.profile,
             include_flights=payload.includeFlights,
+            origin=payload.origin,
+            total_days=payload.totalDays,
         ):
             yield f"data: {json.dumps(event)}\n\n"
 
