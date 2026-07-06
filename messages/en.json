@@ -1,0 +1,11 @@
+{
+  "navigation": {
+    "home": "Home",
+    "newTrip": "New trip",
+    "myTrips": "My trips"
+  },
+  "trip": {
+    "travelPlanner": "Travel Planner",
+    "startPlanning": "Start planning"
+  }
+}

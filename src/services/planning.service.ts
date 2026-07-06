@@ -1,4 +1,4 @@
-import type { PlanTripRequest, PlanningStreamEvent, TripPlan } from "@/types/planning.types";
+import type { PlanTripRequest, PlanningStreamEvent, RefineDayRequest, RefinedDayPlan, TripPlan } from "@/types/planning.types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_AGENTS_API_URL ?? "http://localhost:8000";
 
@@ -15,6 +15,20 @@ export const planningService = {
     }
 
     return (await response.json()) as TripPlan;
+  },
+
+  async refineDay(request: RefineDayRequest): Promise<RefinedDayPlan> {
+    const response = await fetch(`${BACKEND_URL}/planning/day/refine`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Day refine request failed with ${response.status}`);
+    }
+
+    return (await response.json()) as RefinedDayPlan;
   },
 
   async planTripStream(

@@ -7,15 +7,14 @@ import { TripShell } from "@/components/TripShell";
 import { TripWorkspace } from "@/features/trips/components/TripWorkspace";
 
 export function AppShell() {
-  const { trips, fetchTrips, hydrateCollections } = useTripStore();
+  const { trips, fetchTrips } = useTripStore();
 
   useEffect(() => {
     if (trips.length === 0) {
       void fetchTrips();
     }
-    void hydrateCollections();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchTrips, hydrateCollections]);
+  }, [fetchTrips]);
 
   return (
     <TripShell>

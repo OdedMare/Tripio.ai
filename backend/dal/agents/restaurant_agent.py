@@ -14,8 +14,14 @@ fit the traveler's profile.
 
 Pick 4-6 restaurants that best match the traveler's stated food style and budget
 — favor variety (not all the same cuisine) unless their food style is specific.
-Write a short, specific description of why each restaurant fits this traveler,
-and avoid anything that conflicts with their stated dealbreakers."""
+
+For every restaurant, always fill in:
+- label: a 2-3 word badge for the itinerary card, e.g. "Romantic dinner",
+  "Quick lunch", "Local classic", "Street food gem".
+- summary: one short line capturing the essence of the place.
+- description: 1-3 specific sentences on why it fits this traveler.
+
+Avoid anything that conflicts with their stated dealbreakers."""
 
 
 class RestaurantAgent(BaseAgent[GeneratedRestaurants]):

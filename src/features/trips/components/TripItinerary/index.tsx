@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarPlus, MapPin, Plane, Plus, Sparkles, Star, Trash2, Utensils } from "lucide-react";
+import { CalendarPlus, FileDown, MapPin, Plane, Plus, Sparkles, Star, Trash2, Utensils, WandSparkles } from "lucide-react";
 import { useTripStore } from "@/store/trip.store";
 import { downloadTripIcs } from "@/features/planning/utils/calendar";
-import { buildTripMapsUrl } from "@/features/planning/utils/maps";
+import { buildPlaceMapsUrl, buildTripMapsUrl } from "@/features/planning/utils/maps";
+import { exportTripPdf } from "@/features/planning/utils/pdf";
 import { AddPlaceDrawer } from "@/features/trips/components/AddPlaceDrawer";
+import { DayAgentChat } from "@/features/trips/components/DayAgentChat";
 import type { Trip, TripDay } from "@/types/trip.types";
 import type { PlaceDetail } from "@/types/places.types";
 
@@ -22,6 +24,7 @@ function generatePlaceId(prefix: string): string {
 export function TripItinerary({ trip }: TripItineraryProps) {
   const updateTrip = useTripStore((state) => state.updateTrip);
   const [openDrawer, setOpenDrawer] = useState<OpenDrawer>(null);
+  const [openChatDay, setOpenChatDay] = useState<number | null>(null);
 
   const mapsUrl = buildTripMapsUrl(trip);
 
@@ -109,8 +112,16 @@ export function TripItinerary({ trip }: TripItineraryProps) {
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <MapPin size={16} />
-            Open in Google Maps
+            Open layered map
           </a>
+          <button
+            type="button"
+            onClick={() => exportTripPdf(trip)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            <FileDown size={16} />
+            Export PDF
+          </button>
         </div>
       </div>
 
@@ -215,13 +226,24 @@ export function TripItinerary({ trip }: TripItineraryProps) {
                         {attraction.description && <p className="mt-1 text-sm text-slate-600">{attraction.description}</p>}
                         {attraction.estimatedVisitDuration && <p className="mt-1 text-xs text-slate-400">{attraction.estimatedVisitDuration}</p>}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAttraction(attraction.id)}
-                        className="shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={buildPlaceMapsUrl(attraction.name, attraction.location, attraction.latitude, attraction.longitude, attraction.googleMapsUri)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                          aria-label={`Open ${attraction.name} in Google Maps`}
+                        >
+                          <MapPin size={14} />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttraction(attraction.id)}
+                          className="shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
 
@@ -231,19 +253,36 @@ export function TripItinerary({ trip }: TripItineraryProps) {
                         <div className="flex flex-wrap items-center gap-2">
                           <Utensils size={13} className="text-emerald-600" />
                           <p className="text-sm font-semibold text-slate-800">{restaurant.name}</p>
+                          {restaurant.label && (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                              {restaurant.label}
+                            </span>
+                          )}
                           <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 shadow-sm">
                             {restaurant.cuisine}
                           </span>
                         </div>
+                        {restaurant.summary && <p className="mt-1 text-xs font-medium text-slate-500">{restaurant.summary}</p>}
                         {restaurant.description && <p className="mt-1 text-sm text-slate-600">{restaurant.description}</p>}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveRestaurant(restaurant.id)}
-                        className="shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={buildPlaceMapsUrl(restaurant.name, restaurant.location, restaurant.latitude, restaurant.longitude, restaurant.googleMapsUri)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                          aria-label={`Open ${restaurant.name} in Google Maps`}
+                        >
+                          <MapPin size={14} />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRestaurant(restaurant.id)}
+                          className="shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
 
@@ -269,7 +308,21 @@ export function TripItinerary({ trip }: TripItineraryProps) {
                     <Plus size={12} />
                     Add restaurant
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpenChatDay((current) => (current === day.dayNumber ? null : day.dayNumber))}
+                    className="flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                  >
+                    <WandSparkles size={12} />
+                    Adjust with AI
+                  </button>
                 </div>
+
+                {openChatDay === day.dayNumber && (
+                  <div className="mt-3">
+                    <DayAgentChat trip={trip} day={day} onClose={() => setOpenChatDay(null)} />
+                  </div>
+                )}
 
                 {openDrawer?.dayNumber === day.dayNumber && (
                   <div className="mt-3">

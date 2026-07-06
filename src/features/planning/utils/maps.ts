@@ -4,10 +4,27 @@ function toCoordinateOrName(name: string, latitude?: number | null, longitude?: 
   return latitude != null && longitude != null ? `${latitude},${longitude}` : name;
 }
 
+export function buildPlaceMapsUrl(
+  name: string,
+  location?: string | null,
+  latitude?: number | null,
+  longitude?: number | null,
+  googleMapsUri?: string | null,
+): string {
+  if (googleMapsUri) {
+    return googleMapsUri;
+  }
+
+  const query = [name, location].filter(Boolean).join(" ");
+  const target = latitude != null && longitude != null ? `${latitude},${longitude}` : query;
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(target)}`;
+}
+
 /**
  * Builds a Google Maps directions URL chaining each day's hotel and
  * attractions/restaurants, in day order — no API key required, opens in the
- * browser/app.
+ * browser/app as a layered trip route.
  */
 export function buildTripMapsUrl(trip: Trip): string {
   const stops: string[] = [];

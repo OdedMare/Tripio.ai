@@ -3,6 +3,7 @@ from typing import AsyncIterator
 
 from backend.dal import deeplinks, places_client
 from backend.dal.agents.attractions_agent import AttractionsAgent
+from backend.dal.agents.day_editor_agent import DayEditorAgent
 from backend.dal.agents.hotel_agent import HotelAgent
 from backend.dal.agents.itinerary_agent import ItineraryAgent
 from backend.dal.agents.planner_agent import PlannerAgent
@@ -14,6 +15,8 @@ from backend.models.planning import (
     FlightSuggestion,
     HotelSuggestion,
     ItineraryLeg,
+    RefineDayRequest,
+    RefinedDayPlan,
     RestaurantSuggestion,
     TripPlan,
 )
@@ -23,6 +26,7 @@ _hotel_agent = HotelAgent()
 _attractions_agent = AttractionsAgent()
 _itinerary_agent = ItineraryAgent()
 _restaurant_agent = RestaurantAgent()
+_day_editor_agent = DayEditorAgent()
 
 DEFAULT_TRIP_DAYS = 7
 
@@ -151,6 +155,24 @@ def _build_summary(destination: str, profile: TravelDiagnosisProfile, itinerary:
         route = " → ".join(f"{leg.city} ({leg.days}d)" for leg in itinerary)
         return f"A {profile.pace}-paced trip through {destination}: {route}, tailored for a {traveler_label} with {profile.comfortLevel} comfort expectations."
     return f"A {profile.pace}-paced trip to {destination}, tailored for a {traveler_label} with {profile.comfortLevel} comfort expectations."
+
+
+def _refine_day_prompt(request: RefineDayRequest) -> str:
+    return (
+        f"City: {request.city}\n"
+        f"Day number: {request.dayNumber}\n\n"
+        f"Current attractions for this day:\n"
+        f"{json.dumps([item.model_dump() for item in request.attractions], indent=2, ensure_ascii=False)}\n\n"
+        f"Current restaurants for this day:\n"
+        f"{json.dumps([item.model_dump() for item in request.restaurants], indent=2, ensure_ascii=False)}\n\n"
+        f"Traveler's change request:\n{request.instruction}\n\n"
+        "Apply the request and return the recalculated plan for this day."
+    )
+
+
+async def refine_day(request: RefineDayRequest) -> RefinedDayPlan:
+    trace = await _day_editor_agent.run_traced(_refine_day_prompt(request))
+    return trace.output
 
 
 async def build_trip_plan(

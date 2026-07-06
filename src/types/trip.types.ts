@@ -1,15 +1,3 @@
-export type TripTab = "overview" | "timeline" | "hotels" | "restaurants" | "attractions" | "map" | "profile";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  location: string;
-  travelStyle: string;
-  preferences: string[];
-}
-
 export interface TripDay {
   dayNumber: number;
   title: string;
@@ -52,6 +40,8 @@ export interface Restaurant {
   name: string;
   location: string;
   cuisine: string;
+  label?: string;
+  summary?: string;
   rating: number;
   priceRange: string;
   image: string;

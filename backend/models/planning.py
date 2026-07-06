@@ -51,6 +51,8 @@ class RestaurantSuggestion(BaseModel):
     name: str
     area: str
     cuisine: str
+    label: str = ""
+    summary: str = ""
     rating: float
     priceRange: str
     description: str
@@ -124,3 +126,17 @@ class GeneratedFlights(BaseModel):
 
 class GeneratedItinerary(BaseModel):
     legs: list[ItineraryLeg]
+
+
+class RefineDayRequest(BaseModel):
+    city: str
+    dayNumber: int
+    instruction: str
+    attractions: list[AttractionSuggestion] = []
+    restaurants: list[RestaurantSuggestion] = []
+
+
+class RefinedDayPlan(BaseModel):
+    changeSummary: str
+    attractions: list[AttractionSuggestion]
+    restaurants: list[RestaurantSuggestion]

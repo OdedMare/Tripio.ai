@@ -3,7 +3,7 @@ import json
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-from backend.models.planning import PlanTripRequest, TripPlan
+from backend.models.planning import PlanTripRequest, RefineDayRequest, RefinedDayPlan, TripPlan
 from backend.services import planning_service
 
 router = APIRouter(prefix="/planning", tags=["planning"])
@@ -19,6 +19,11 @@ async def plan_trip(payload: PlanTripRequest) -> TripPlan:
         origin=payload.origin,
         total_days=payload.totalDays,
     )
+
+
+@router.post("/day/refine", response_model=RefinedDayPlan)
+async def refine_day(payload: RefineDayRequest) -> RefinedDayPlan:
+    return await planning_service.refine_day(payload)
 
 
 @router.post("/plan/stream")

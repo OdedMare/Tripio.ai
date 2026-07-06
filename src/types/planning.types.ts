@@ -37,6 +37,8 @@ export interface RestaurantSuggestion {
   name: string;
   area: string;
   cuisine: string;
+  label: string;
+  summary: string;
   rating: number;
   priceRange: string;
   description: string;
@@ -81,6 +83,20 @@ export interface PlanTripRequest {
   totalDays?: number | null;
   profile: TravelDiagnosisProfile;
   includeFlights: boolean;
+}
+
+export interface RefineDayRequest {
+  city: string;
+  dayNumber: number;
+  instruction: string;
+  attractions: Partial<AttractionSuggestion>[];
+  restaurants: Partial<RestaurantSuggestion>[];
+}
+
+export interface RefinedDayPlan {
+  changeSummary: string;
+  attractions: AttractionSuggestion[];
+  restaurants: RestaurantSuggestion[];
 }
 
 export type PlanningAgentKey = "planner" | "itinerary" | "hotel" | "attractions" | "restaurants";

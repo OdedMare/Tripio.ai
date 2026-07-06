@@ -1,0 +1,11 @@
+{
+  "navigation": {
+    "home": "בית",
+    "newTrip": "טיול חדש",
+    "myTrips": "הטיולים שלי"
+  },
+  "trip": {
+    "travelPlanner": "תכנון טיולים",
+    "startPlanning": "התחל לתכנן"
+  }
+}

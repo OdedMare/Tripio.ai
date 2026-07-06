@@ -80,6 +80,8 @@ export function tripPlanToTrip(plan: TripPlan, overrides: { origin?: string | nu
         name: restaurant.name,
         location: restaurant.area,
         cuisine: restaurant.cuisine,
+        label: restaurant.label,
+        summary: restaurant.summary,
         rating: restaurant.rating,
         priceRange: restaurant.priceRange,
         image: PLACEHOLDER_IMAGE,
