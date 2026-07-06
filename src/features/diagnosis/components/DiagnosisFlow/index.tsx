@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { useDiagnosisStore } from "@/store/diagnosis.store";
+import { useTripIntentStore } from "@/store/tripIntent.store";
 import { GmailConnectCard } from "@/features/diagnosis/components/GmailConnectCard";
 import { QuestionCard } from "@/features/diagnosis/components/QuestionCard";
 import { ProfilePreviewPanel } from "@/features/diagnosis/components/ProfilePreviewPanel";
@@ -20,8 +21,12 @@ export function DiagnosisFlow() {
     selectOption,
     goBack,
   } = useDiagnosisStore();
+  const tripIntentSource = useTripIntentStore((state) => state.source);
 
-  const [showGmailStep, setShowGmailStep] = useState(true);
+  // The "start from scratch" flow already picked a destination before
+  // reaching here — skip the Gmail step in that case; it's only relevant
+  // when the user hasn't already committed to a destination.
+  const [showGmailStep, setShowGmailStep] = useState(tripIntentSource !== "scratch");
 
   useEffect(() => {
     if (!showGmailStep) {
@@ -57,6 +62,7 @@ export function DiagnosisFlow() {
                     step={questionHistory.length + 1}
                     selectedOptionId={null}
                     canGoBack={questionHistory.length > 0}
+                    isLoading={isLoading}
                     onSelect={(optionId) => void selectOption(currentQuestion.id, optionId)}
                     onBack={goBack}
                   />

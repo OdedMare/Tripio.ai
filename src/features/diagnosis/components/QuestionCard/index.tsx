@@ -10,11 +10,12 @@ interface QuestionCardProps {
   step: number;
   selectedOptionId: string | null;
   canGoBack: boolean;
+  isLoading?: boolean;
   onSelect: (optionId: string) => void;
   onBack: () => void;
 }
 
-export function QuestionCard({ question, step, selectedOptionId, canGoBack, onSelect, onBack }: QuestionCardProps) {
+export function QuestionCard({ question, step, selectedOptionId, canGoBack, isLoading, onSelect, onBack }: QuestionCardProps) {
   return (
     <div
       key={question.id}
@@ -34,6 +35,7 @@ export function QuestionCard({ question, step, selectedOptionId, canGoBack, onSe
             key={option.id}
             option={option}
             isSelected={selectedOptionId === option.id}
+            disabled={isLoading}
             onSelect={onSelect}
           />
         ))}

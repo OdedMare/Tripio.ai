@@ -7,15 +7,17 @@ import type { DiagnosisOption } from "@/types/diagnosis.types";
 interface OptionCardProps {
   option: DiagnosisOption;
   isSelected: boolean;
+  disabled?: boolean;
   onSelect: (optionId: string) => void;
 }
 
-export function OptionCard({ option, isSelected, onSelect }: OptionCardProps) {
+export function OptionCard({ option, isSelected, disabled, onSelect }: OptionCardProps) {
   return (
     <button
       type="button"
       onClick={() => onSelect(option.id)}
-      className={`group relative flex w-full items-start gap-4 rounded-2xl border px-5 py-4 text-left transition ${
+      disabled={disabled}
+      className={`group relative flex w-full items-start gap-4 rounded-2xl border px-5 py-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
         isSelected
           ? "border-slate-900 bg-slate-900 text-white shadow-[0_16px_40px_-16px_rgba(15,23,42,0.45)]"
           : "border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50"

@@ -31,8 +31,8 @@ export const useDiagnosisStore = create<DiagnosisState>((set, get) => ({
   },
 
   selectOption: async (questionId, optionId) => {
-    const { answers, questionHistory, currentQuestion } = get();
-    if (!currentQuestion || currentQuestion.id !== questionId) return;
+    const { answers, questionHistory, currentQuestion, isLoading } = get();
+    if (!currentQuestion || currentQuestion.id !== questionId || isLoading) return;
 
     const nextAnswers = [...answers, { questionId, optionId }];
     const nextHistory = [...questionHistory, currentQuestion];

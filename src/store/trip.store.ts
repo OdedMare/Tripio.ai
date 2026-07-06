@@ -5,6 +5,7 @@ import { restaurantService } from "@/services/restaurant.service";
 import { attractionService } from "@/services/attraction.service";
 import { profileService } from "@/services/profile.service";
 import type { Attraction, Hotel, Restaurant, Trip, TripTab, TravelProfile } from "@/types/trip.types";
+import type { DetectedTrip } from "@/types/gmail.types";
 
 interface TripState {
   trips: Trip[];
@@ -19,6 +20,7 @@ interface TripState {
   fetchTrips: () => Promise<void>;
   fetchTrip: (tripId: string) => Promise<void>;
   createTrip: (prompt: string) => Promise<void>;
+  createTripFromDetectedTrip: (detectedTrip: DetectedTrip) => Promise<Trip>;
   setCurrentTripId: (tripId: string | null) => void;
   setActiveTab: (tab: TripTab) => void;
   hydrateCollections: () => Promise<void>;
@@ -52,6 +54,13 @@ export const useTripStore = create<TripState>((set, get) => ({
     set({ isLoading: true });
     const trip = await tripService.createTrip(prompt);
     set((state) => ({ trips: [trip, ...state.trips], currentTripId: trip.id, selectedTrip: trip, activeTab: "overview", isLoading: false }));
+  },
+
+  createTripFromDetectedTrip: async (detectedTrip: DetectedTrip) => {
+    set({ isLoading: true });
+    const trip = await tripService.createTripFromDetectedTrip(detectedTrip);
+    set((state) => ({ trips: [trip, ...state.trips], currentTripId: trip.id, selectedTrip: trip, activeTab: "overview", isLoading: false }));
+    return trip;
   },
 
   setCurrentTripId: (tripId) => {

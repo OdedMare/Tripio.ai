@@ -71,7 +71,7 @@ export function ProfileSummary({ profile }: ProfileSummaryProps) {
 
       <button
         type="button"
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/trips/plan")}
         className="mt-6 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
       >
         Start planning my trip

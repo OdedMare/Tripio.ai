@@ -7,4 +7,5 @@ export interface DetectedTrip {
   dates: string | null;
   confidence: "high" | "medium" | "low";
   sourceSubject: string;
+  isFlight: boolean;
 }

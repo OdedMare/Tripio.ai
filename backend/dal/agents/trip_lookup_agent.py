@@ -9,6 +9,12 @@ already narrowed down to likely travel-related messages. Your job is to decide w
 of them actually describe a real trip (a flight, hotel, or other booking), and extract
 the destination and travel dates when they're evident from the subject/snippet alone.
 
+Set "isFlight" to true only for emails that are specifically an airline flight
+confirmation/itinerary/boarding pass (the destination is where the flight lands).
+Set it to false for hotel, car rental, or other non-flight travel bookings. This
+matters because flights are what anchor a trip's destination and dates for the
+traveler — hotel-only bookings are supporting detail, not the anchor.
+
 Do not guess a destination or date you can't reasonably infer from the given text.
 If an email is ambiguous or clearly not a real booking (e.g. a newsletter, a marketing
 email, a receipt for something unrelated to travel), leave it out of your response

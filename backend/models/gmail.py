@@ -10,6 +10,7 @@ class DetectedTrip(BaseModel):
     dates: str | None
     confidence: str  # "high" | "medium" | "low"
     sourceSubject: str
+    isFlight: bool = False
 
 
 class DetectedTrips(BaseModel):
