@@ -1,4 +1,5 @@
 import time
+import uuid
 from dataclasses import dataclass, field
 
 from backend.dal.agents.diagnosis_agent import DiagnosisAgent
@@ -12,7 +13,14 @@ from backend.models.diagnosis import (
     TravelDiagnosisProfile,
 )
 
-MIN_QUESTIONS = 5
+
+def _unique_question_id(step: int) -> str:
+    """
+    The agent's own `id` field is not guaranteed unique across separate calls
+    (each generation is a stateless run with no shared memory of prior IDs),
+    so the service layer — not the model — is the source of truth for identity.
+    """
+
 MAX_QUESTIONS = 12
 
 _diagnosis_agent = DiagnosisAgent()
@@ -70,7 +78,7 @@ async def get_next_question(
         user_prompt = _build_user_prompt(answers, answered_questions)
         generated = await _diagnosis_agent.run(user_prompt)
         question = DiagnosisQuestion(
-            id=generated.id,
+            id=_unique_question_id(step),
             order=step + 1,
             title=generated.title,
             subtitle=generated.subtitle,
@@ -80,7 +88,6 @@ async def get_next_question(
         return _apply_question_count_bounds(question, step)
     except Exception:
         return _apply_question_count_bounds(get_fallback_question(step), step)
-
 
 
 _DEFAULT_TRAVELER_TYPE = "explorer"
@@ -137,12 +144,9 @@ class ProfileDraft:
 
 
 def _find_selected_option(
+    question: DiagnosisQuestion,
     answer: DiagnosisAnswer,
-    answered_questions: list[DiagnosisQuestion],
 ) -> DiagnosisOption | None:
-    question = next((q for q in answered_questions if q.id == answer.questionId), None)
-    if not question:
-        return None
     return next((o for o in question.options if o.id == answer.optionId), None)
 
 
@@ -150,9 +154,14 @@ def _accumulate_traits(
     answers: list[DiagnosisAnswer],
     answered_questions: list[DiagnosisQuestion],
 ) -> ProfileDraft:
+    """
+    `answers[i]` always corresponds to `answered_questions[i]` — they're appended
+    in lockstep by the client. Match by position, not by `questionId`: generated
+    question ids are not guaranteed unique across separate agent calls.
+    """
     draft = ProfileDraft()
-    for answer in answers:
-        option = _find_selected_option(answer, answered_questions)
+    for question, answer in zip(answered_questions, answers):
+        option = _find_selected_option(question, answer)
         if option:
             draft.apply(option.traits)
     return draft

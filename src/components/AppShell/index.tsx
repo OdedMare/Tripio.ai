@@ -11,8 +11,11 @@ export function AppShell() {
   const { trips, currentTripId, fetchTrips, hydrateCollections } = useTripStore();
 
   useEffect(() => {
-    void fetchTrips();
+    if (trips.length === 0) {
+      void fetchTrips();
+    }
     void hydrateCollections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchTrips, hydrateCollections]);
 
   return (

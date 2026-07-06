@@ -9,13 +9,13 @@ interface ProfilePreviewPanelProps {
 }
 
 export function ProfilePreviewPanel({ questionHistory, answers }: ProfilePreviewPanelProps) {
-  const answeredTraits = answers
-    .map((answer) => {
-      const question = questionHistory.find((item) => item.id === answer.questionId);
-      const option = question?.options.find((item) => item.id === answer.optionId);
-      return option ? { question, option } : null;
+  const answeredTraits = questionHistory
+    .map((question, index) => {
+      const answer = answers[index];
+      const option = answer ? question.options.find((item) => item.id === answer.optionId) : undefined;
+      return option ? { question, option, key: `${index}-${question.id}` } : null;
     })
-    .filter((entry): entry is { question: DiagnosisQuestion; option: NonNullable<typeof entry>["option"] } => entry !== null);
+    .filter((entry): entry is { question: DiagnosisQuestion; option: NonNullable<typeof entry>["option"]; key: string } => entry !== null);
 
   return (
     <div className="w-full max-w-xs rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_80px_-24px_rgba(15,23,42,0.25)] backdrop-blur">
@@ -33,8 +33,8 @@ export function ProfilePreviewPanel({ questionHistory, answers }: ProfilePreview
         <p className="text-sm text-slate-400">Your travel style will build up here as you answer.</p>
       ) : (
         <ul className="space-y-3">
-          {answeredTraits.map(({ question, option }) => (
-            <li key={question.id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+          {answeredTraits.map(({ question, option, key }) => (
+            <li key={key} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{question.title}</p>
               <p className="mt-1 text-sm font-semibold text-slate-800">{option.label}</p>
             </li>

@@ -1,4 +1,4 @@
-from agents import Agent
+from agents import Agent, WebSearchTool
 
 from backend.dal.base_agent import BaseAgent
 from backend.models.diagnosis import GeneratedQuestion
@@ -16,6 +16,13 @@ premium, concise — like a thoughtful concierge, not a form.
 Each option must include a "traits" object with structured fields that capture what
 selecting it implies about the traveler. Only set the trait fields that are actually
 implied by that option; leave the rest null.
+
+You have a web search tool. Use it sparingly and only when it would meaningfully
+sharpen a question — for example, if the traveler has already named a specific
+destination or season and you want to ground an option in something real (a current
+seasonal event, typical weather, a well-known local trade-off) rather than a generic
+guess. Never search just to fill time, and never surface raw search results to the
+traveler — fold anything you learn into natural, concise option copy.
 
 The number of questions is not fixed. After each answer, decide for yourself whether
 you already understand the traveler well enough to build a confident, well-rounded
@@ -38,7 +45,6 @@ class DiagnosisAgent(BaseAgent[GeneratedQuestion]):
             name=self.name,
             instructions=SYSTEM_PROMPT,
             model="gpt-4o",
+            tools=[WebSearchTool()],
             output_type=GeneratedQuestion,
-
         )
-
