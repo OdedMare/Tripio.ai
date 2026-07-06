@@ -4,17 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDiagnosisStore } from "@/store/diagnosis.store";
 import { useTripIntentStore } from "@/store/tripIntent.store";
+import { useTripStore } from "@/store/trip.store";
 import { planningService } from "@/services/planning.service";
+import { tripPlanToTrip } from "@/services/trip.service";
 import { PlanningLoader } from "@/features/planning/components/PlanningLoader";
-import { TripPlanResult } from "@/features/planning/components/TripPlanResult";
-import type { PlanningStageProgress, TripPlan } from "@/types/planning.types";
+import type { PlanningStageProgress } from "@/types/planning.types";
 
 export function TripPlanPage() {
   const router = useRouter();
   const profile = useDiagnosisStore((state) => state.profile);
-  const { origin, destination, dates, totalDays, includeFlights } = useTripIntentStore();
+  const { origin, destination, dates, totalDays, includeFlights, reset: resetTripIntent } = useTripIntentStore();
+  const saveTrip = useTripStore((state) => state.saveTrip);
 
-  const [plan, setPlan] = useState<TripPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stages, setStages] = useState<PlanningStageProgress[]>([]);
 
@@ -44,7 +45,12 @@ export function TripPlanPage() {
         },
         controller.signal,
       )
-      .then((result) => setPlan(result))
+      .then(async (plan) => {
+        const trip = tripPlanToTrip(plan, { origin });
+        await saveTrip(trip);
+        resetTripIntent();
+        router.replace(`/trips/${trip.id}`);
+      })
       .catch((err) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
         setError("We couldn't build your trip plan right now. Please try again.");
@@ -64,9 +70,5 @@ export function TripPlanPage() {
     );
   }
 
-  if (!plan) {
-    return <PlanningLoader stages={stages} />;
-  }
-
-  return <TripPlanResult plan={plan} />;
+  return <PlanningLoader stages={stages} />;
 }

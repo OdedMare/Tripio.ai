@@ -5,7 +5,6 @@ import { restaurantService } from "@/services/restaurant.service";
 import { attractionService } from "@/services/attraction.service";
 import { profileService } from "@/services/profile.service";
 import type { Attraction, Hotel, Restaurant, Trip, TripTab, TravelProfile } from "@/types/trip.types";
-import type { DetectedTrip } from "@/types/gmail.types";
 
 interface TripState {
   trips: Trip[];
@@ -19,8 +18,8 @@ interface TripState {
   profile: TravelProfile | null;
   fetchTrips: () => Promise<void>;
   fetchTrip: (tripId: string) => Promise<void>;
-  createTrip: (prompt: string) => Promise<void>;
-  createTripFromDetectedTrip: (detectedTrip: DetectedTrip) => Promise<Trip>;
+  saveTrip: (trip: Trip) => Promise<void>;
+  updateTrip: (trip: Trip) => Promise<void>;
   setCurrentTripId: (tripId: string | null) => void;
   setActiveTab: (tab: TripTab) => void;
   hydrateCollections: () => Promise<void>;
@@ -50,17 +49,18 @@ export const useTripStore = create<TripState>((set, get) => ({
     set({ selectedTrip: trip, currentTripId: trip.id, isLoading: false });
   },
 
-  createTrip: async (prompt: string) => {
+  saveTrip: async (trip: Trip) => {
     set({ isLoading: true });
-    const trip = await tripService.createTrip(prompt);
-    set((state) => ({ trips: [trip, ...state.trips], currentTripId: trip.id, selectedTrip: trip, activeTab: "overview", isLoading: false }));
+    const saved = await tripService.saveTrip(trip);
+    set((state) => ({ trips: [saved, ...state.trips], currentTripId: saved.id, selectedTrip: saved, activeTab: "overview", isLoading: false }));
   },
 
-  createTripFromDetectedTrip: async (detectedTrip: DetectedTrip) => {
-    set({ isLoading: true });
-    const trip = await tripService.createTripFromDetectedTrip(detectedTrip);
-    set((state) => ({ trips: [trip, ...state.trips], currentTripId: trip.id, selectedTrip: trip, activeTab: "overview", isLoading: false }));
-    return trip;
+  updateTrip: async (trip: Trip) => {
+    const updated = await tripService.updateTrip(trip);
+    set((state) => ({
+      trips: state.trips.map((item) => (item.id === updated.id ? updated : item)),
+      selectedTrip: state.selectedTrip?.id === updated.id ? updated : state.selectedTrip,
+    }));
   },
 
   setCurrentTripId: (tripId) => {
