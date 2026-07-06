@@ -1,40 +1,32 @@
-import type { TripPlan } from "@/types/planning.types";
+import type { Trip } from "@/types/trip.types";
 
-function toCoordinateOrName(name: string, latitude: number | null, longitude: number | null): string {
-  return latitude !== null && longitude !== null ? `${latitude},${longitude}` : name;
+function toCoordinateOrName(name: string, latitude?: number | null, longitude?: number | null): string {
+  return latitude != null && longitude != null ? `${latitude},${longitude}` : name;
 }
 
 /**
- * Builds a Google Maps directions URL chaining each city's hotel and
- * attractions, in itinerary order — no API key required, opens in the
- * browser/app. Falls back to the flattened hotel/attraction lists for plans
- * without a multi-city itinerary.
+ * Builds a Google Maps directions URL chaining each day's hotel and
+ * attractions/restaurants, in day order — no API key required, opens in the
+ * browser/app.
  */
-export function buildTripMapsUrl(plan: TripPlan): string {
+export function buildTripMapsUrl(trip: Trip): string {
   const stops: string[] = [];
 
-  if (plan.itinerary.length > 0) {
-    for (const leg of plan.itinerary) {
-      const legHotel = leg.hotels[0];
-      if (legHotel) {
-        stops.push(toCoordinateOrName(legHotel.name, legHotel.latitude, legHotel.longitude));
-      }
-      for (const attraction of leg.attractions) {
-        stops.push(toCoordinateOrName(attraction.name, attraction.latitude, attraction.longitude));
-      }
+  for (const day of trip.days) {
+    const dayHotel = trip.hotels.find((hotel) => (hotel.dayStart ?? 0) <= day.dayNumber && day.dayNumber <= (hotel.dayEnd ?? 0));
+    if (dayHotel && !stops.includes(toCoordinateOrName(dayHotel.name, dayHotel.latitude, dayHotel.longitude))) {
+      stops.push(toCoordinateOrName(dayHotel.name, dayHotel.latitude, dayHotel.longitude));
     }
-  } else {
-    const primaryHotel = plan.hotels[0];
-    if (primaryHotel) {
-      stops.push(toCoordinateOrName(primaryHotel.name, primaryHotel.latitude, primaryHotel.longitude));
-    }
-    for (const attraction of plan.attractions) {
+    for (const attraction of trip.attractions.filter((item) => item.dayNumber === day.dayNumber)) {
       stops.push(toCoordinateOrName(attraction.name, attraction.latitude, attraction.longitude));
+    }
+    for (const restaurant of trip.restaurants.filter((item) => item.dayNumber === day.dayNumber)) {
+      stops.push(toCoordinateOrName(restaurant.name, restaurant.latitude, restaurant.longitude));
     }
   }
 
   if (stops.length === 0) {
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(plan.destination)}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.title)}`;
   }
 
   if (stops.length === 1) {

@@ -44,7 +44,7 @@ class DiagnosisAgent(BaseAgent[GeneratedQuestion]):
         return Agent(
             name=self.name,
             instructions=SYSTEM_PROMPT,
-            model="gpt-5.5",
+            model="gpt-5.2",
             tools=[WebSearchTool()],
             output_type=GeneratedQuestion,
         )
