@@ -20,7 +20,10 @@ def _unique_question_id(step: int) -> str:
     (each generation is a stateless run with no shared memory of prior IDs),
     so the service layer — not the model — is the source of truth for identity.
     """
+    return f"question-{step + 1}-{uuid.uuid4().hex[:8]}"
 
+
+MIN_QUESTIONS = 5
 MAX_QUESTIONS = 12
 
 _diagnosis_agent = DiagnosisAgent()

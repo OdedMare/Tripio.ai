@@ -1,0 +1,14 @@
+fastapi==0.139.0
+google-api-core==2.31.0
+google-api-python-client==2.198.0
+google-auth==2.55.1
+google-auth-httplib2==0.4.0
+google-auth-oauthlib==1.4.0
+googleapis-common-protos==1.75.0
+openai==2.44.0
+openai-agents==0.17.7
+pydantic==2.13.4
+pydantic-settings==2.14.2
+pydantic_core==2.46.4
+python-dotenv==1.2.2
+uvicorn==0.50.0

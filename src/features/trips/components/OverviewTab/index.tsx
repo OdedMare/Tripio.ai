@@ -21,7 +21,7 @@ export function OverviewTab() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">What this stage includes</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             <li>• Responsive shell with conversation-style sidebar</li>
-            <li>• Mocked async services and Zustand-powered state</li>
+            <li>• Async services and Zustand-powered state</li>
             <li>• Feature-based tabs for hotels, restaurants, attractions, map, and profile</li>
           </ul>
         </div>

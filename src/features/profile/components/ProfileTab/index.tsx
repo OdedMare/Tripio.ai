@@ -1,12 +1,28 @@
 "use client";
 
+import Link from "next/link";
+import { UserRound } from "lucide-react";
 import { useTripStore } from "@/store/trip.store";
 
 export function ProfileTab() {
   const { profile } = useTripStore();
 
   if (!profile) {
-    return null;
+    return (
+      <div className="rounded-[24px] border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
+          <UserRound size={18} />
+        </div>
+        <p className="text-lg font-semibold text-slate-900">No travel profile yet</p>
+        <p className="mt-2 text-sm text-slate-500">Complete the travel style diagnosis to build your profile.</p>
+        <Link
+          href="/diagnosis"
+          className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          Start diagnosis
+        </Link>
+      </div>
+    );
   }
 
   return (
