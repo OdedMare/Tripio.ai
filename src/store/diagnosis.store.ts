@@ -59,7 +59,3 @@ export function selectCurrentQuestion(state: DiagnosisState): DiagnosisQuestion 
   if (state.isComplete) return null;
   return state.questions[state.answers.length] ?? null;
 }
-
-export function selectQuestionHistory(state: DiagnosisState): DiagnosisQuestion[] {
-  return state.questions.slice(0, state.answers.length);
-}
