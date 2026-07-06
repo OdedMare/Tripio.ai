@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 TravelerType = Literal["explorer", "relaxer", "culture-seeker", "foodie", "thrill-seeker", "connector"]
 Pace = Literal["relaxed", "balanced", "adventurous"]
@@ -65,11 +65,6 @@ class DiagnosisQuestion(BaseModel):
 class DiagnosisAnswer(BaseModel):
     questionId: str
     optionId: str
-
-
-class NextQuestionRequest(BaseModel):
-    answers: list[DiagnosisAnswer] = Field(default_factory=list)
-    answeredQuestions: list[DiagnosisQuestion] = Field(default_factory=list)
 
 
 class TravelDiagnosisProfile(BaseModel):

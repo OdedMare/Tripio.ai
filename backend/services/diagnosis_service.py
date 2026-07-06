@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from backend.dal.agents.diagnosis_agent import DiagnosisAgent
 from backend.dal.base_agent import is_configured
-from backend.dal.question_bank import get_fallback_question
+from backend.dal.question_bank import get_fallback_question_set
 from backend.models.diagnosis import (
     DiagnosisAnswer,
     DiagnosisOption,
@@ -13,84 +13,39 @@ from backend.models.diagnosis import (
     TravelDiagnosisProfile,
 )
 
-
-def _unique_question_id(step: int) -> str:
-    """
-    The agent's own `id` field is not guaranteed unique across separate calls
-    (each generation is a stateless run with no shared memory of prior IDs),
-    so the service layer — not the model — is the source of truth for identity.
-    """
-    return f"question-{step + 1}-{uuid.uuid4().hex[:8]}"
-
-
-MIN_QUESTIONS = 5
-MAX_QUESTIONS = 12
+QUESTION_SET_PROMPT = "Design the full diagnosis question set now."
 
 _diagnosis_agent = DiagnosisAgent()
 
 
-def _describe_answer(question: DiagnosisQuestion, answer: DiagnosisAnswer | None) -> tuple[str, str]:
-    option = next((o for o in question.options if answer and o.id == answer.optionId), None)
-    if not option:
-        return "unknown", ""
-    return option.label, option.description
+def _unique_question_id(order: int) -> str:
+    """
+    The agent's own `id` field is not guaranteed unique across generations,
+    so the service layer — not the model — is the source of truth for identity.
+    """
+    return f"question-{order}-{uuid.uuid4().hex[:8]}"
 
 
-def _build_history_lines(answers: list[DiagnosisAnswer], answered_questions: list[DiagnosisQuestion]) -> list[str]:
-    lines = []
-    for index, question in enumerate(answered_questions):
-        answer = answers[index] if index < len(answers) else None
-        label, description = _describe_answer(question, answer)
-        lines.append(f'Q{index + 1}: "{question.title}" -> answered "{label}" ({description})')
-    return lines
-
-
-def _build_user_prompt(answers: list[DiagnosisAnswer], answered_questions: list[DiagnosisQuestion]) -> str:
-    step = len(answers)
-    if step == 0:
-        return "Ask the first question to begin the traveler's diagnosis."
-
-    history = "\n".join(_build_history_lines(answers, answered_questions))
-    return (
-        f"Here is what we've learned so far ({step} question(s) answered):\n{history}\n\n"
-        "Ask the next question, or set isLastQuestion=true on this question if you already "
-        "have enough to build a confident profile."
-    )
-
-
-def _apply_question_count_bounds(question: DiagnosisQuestion, step: int) -> DiagnosisQuestion:
-    """Safety rail: never finish before MIN_QUESTIONS, never exceed MAX_QUESTIONS."""
-    next_question_number = step + 1
-    if next_question_number < MIN_QUESTIONS:
-        return question.model_copy(update={"isLastQuestion": False})
-    if next_question_number >= MAX_QUESTIONS:
-        return question.model_copy(update={"isLastQuestion": True})
-    return question
-
-
-async def get_next_question(
-    answers: list[DiagnosisAnswer],
-    answered_questions: list[DiagnosisQuestion],
-) -> DiagnosisQuestion:
-    step = len(answers)
-
+async def get_question_set() -> list[DiagnosisQuestion]:
     if not is_configured():
-        return _apply_question_count_bounds(get_fallback_question(step), step)
+        return get_fallback_question_set()
 
     try:
-        user_prompt = _build_user_prompt(answers, answered_questions)
-        generated = await _diagnosis_agent.run(user_prompt)
-        question = DiagnosisQuestion(
-            id=_unique_question_id(step),
-            order=step + 1,
-            title=generated.title,
-            subtitle=generated.subtitle,
-            options=generated.options,
-            isLastQuestion=generated.isLastQuestion,
-        )
-        return _apply_question_count_bounds(question, step)
+        generated = await _diagnosis_agent.run(QUESTION_SET_PROMPT)
+        last_index = len(generated.questions) - 1
+        return [
+            DiagnosisQuestion(
+                id=_unique_question_id(index + 1),
+                order=index + 1,
+                title=question.title,
+                subtitle=question.subtitle,
+                options=question.options,
+                isLastQuestion=index == last_index,
+            )
+            for index, question in enumerate(generated.questions)
+        ]
     except Exception:
-        return _apply_question_count_bounds(get_fallback_question(step), step)
+        return get_fallback_question_set()
 
 
 _DEFAULT_TRAVELER_TYPE = "explorer"

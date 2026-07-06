@@ -17,11 +17,8 @@ async function postJson<TResponse>(path: string, body: unknown): Promise<TRespon
 }
 
 export const diagnosisService = {
-  async getNextQuestion(
-    answers: DiagnosisAnswer[],
-    answeredQuestions: DiagnosisQuestion[],
-  ): Promise<DiagnosisQuestion> {
-    return postJson<DiagnosisQuestion>("/diagnosis/next-question", { answers, answeredQuestions });
+  async getQuestionSet(): Promise<DiagnosisQuestion[]> {
+    return postJson<DiagnosisQuestion[]>("/diagnosis/questions", {});
   },
 
   async buildProfile(
